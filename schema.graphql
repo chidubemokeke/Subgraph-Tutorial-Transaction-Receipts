@@ -1,0 +1,68 @@
+# Account entity representing a user account in the system
+type Owner @entity {
+  "Unique identifier for the account (typically the user's address)"
+  id: ID!
+
+  "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
+  tokens: [Nft!]! @derivedFrom(field: "owner")
+
+  "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
+  transactions: [Transaction!]! @derivedFrom(field: "owner")
+}
+
+# Transfer entity representing the transfer of the CryptoKitty NFT
+type Nft @entity {
+  "Unique identifier for the transfer event"
+  id: ID!
+
+  "Owner of the Coven NFT"
+  owner: Owner!
+
+  "The unique token ID for the CryptoCoven NFT"
+  tokenId: BigInt!
+
+  "Timestamp of when the NFT was created/minted"
+  createdAt: BigInt!
+
+  "Index of the log within the transaction for tracking"
+  logIndex: BigInt!
+
+  "Hash of the transaction"
+  txHash: Bytes!
+}
+
+# Transaction entity representing a sale or transfer of NFTs
+type Transaction @entity {
+  "Unique identifier for each transaction."
+  id: ID!
+
+  "Reference to the Owner entity involved in this transaction."
+  owner: Owner!
+
+  "Address of the seller; required if the transaction involves a mint."
+  seller: Bytes!
+
+  "Address of the buyer; required for both mint and sale transactions."
+  buyer: Bytes!
+
+  "Unique identifier of the NFT being transferred."
+  referenceId: BigInt!
+
+  "Amount of the NFT sold (relevant for sales)."
+  amountSold: BigInt
+
+  "Total amount of NFTs sold in this transaction (relevant for sales)."
+  totalAmountSold: BigInt
+
+  "Total amount of NFTs bought in this transaction (relevant for sales)."
+  totalAmountBought: BigInt
+
+  "Block number when this transaction was recorded; helps in tracking historical data."
+  blockNumber: BigInt!
+
+  "Timestamp of the block when this transaction was recorded; provides a time reference."
+  blockTimestamp: BigInt!
+
+  "Hash of the transaction."
+  txHash: Bytes!
+}
