@@ -1,5 +1,5 @@
 import { BigInt, Address, Bytes } from "@graphprotocol/graph-ts";
-import { Owner } from "../../generated/schema";
+import { Owner, Transaction } from "../../generated/schema";
 import { BIGINT_ZERO } from "./consts";
 
 // Function to get or create an Account entity based on an Ethereum address
@@ -20,4 +20,25 @@ export function getOrCreateAccount(address: Bytes): Owner {
   }
   // Return the account entity, which will be either the existing one or the newly created one
   return account as Owner;
+}
+
+// Helper function to create or load a Transaction entity
+export function createOrLoadTransaction(transactionId: Bytes): Transaction {
+  // Attempt to load the existing Transaction entity
+  let transaction = Transaction.load(transactionId.toHex());
+
+  // If it doesn't exist, create a new Transaction entity
+  if (transaction == null) {
+    transaction = new Transaction(transactionId.toHex());
+    transaction.seller = Bytes.empty(); // Initialize to an empty Bytes
+    transaction.buyer = Bytes.empty(); // Initialize to an empty Bytes
+    transaction.referenceId = BIGINT_ZERO; // Initialize to zero
+    transaction.marketPlace = ""; // Initialize to zero
+    transaction.amountSold = BIGINT_ZERO; // Initialize to zero
+    transaction.totalAmountSold = BIGINT_ZERO; // Initialize to zero
+    transaction.totalAmountBought = BIGINT_ZERO; // Initialize to zero
+    transaction.txHash = Bytes.empty(); // Initialize to an empty Bytes
+  }
+
+  return transaction;
 }

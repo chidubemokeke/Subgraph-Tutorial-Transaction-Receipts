@@ -48,20 +48,17 @@ type Transaction @entity {
   "Unique identifier of the NFT being transferred."
   referenceId: BigInt!
 
+  "The marketplace the nft contract interacted with, likely a trade or mint"
+  marketPlace: String!
+
   "Amount of the NFT sold (relevant for sales)."
-  amountSold: BigInt
+  amountSold: BigInt!
 
   "Total amount of NFTs sold in this transaction (relevant for sales)."
-  totalAmountSold: BigInt
+  totalAmountSold: BigInt!
 
   "Total amount of NFTs bought in this transaction (relevant for sales)."
-  totalAmountBought: BigInt
-
-  "Block number when this transaction was recorded; helps in tracking historical data."
-  blockNumber: BigInt!
-
-  "Timestamp of the block when this transaction was recorded; provides a time reference."
-  blockTimestamp: BigInt!
+  totalAmountBought: BigInt!
 
   "Hash of the transaction."
   txHash: Bytes!

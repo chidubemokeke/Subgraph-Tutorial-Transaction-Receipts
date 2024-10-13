@@ -11,7 +11,7 @@ export const ZERO_ADDRESS: Address = Address.fromString(
   "0x0000000000000000000000000000000000000000"
 );
 
-// List of some Marketplaces the CrypToCoven NFT is listed/Traded
+// List of some Marketplaces the CryptoKitties NFT is listed/Traded
 
 // Constant representing the address of the OpenSeaV1 contract.
 export const OPENSEAV1_ADDRESS = "0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b";
