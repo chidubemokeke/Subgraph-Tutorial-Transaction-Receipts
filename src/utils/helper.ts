@@ -35,8 +35,12 @@ export function createOrLoadTransaction(transactionId: Bytes): Transaction {
     transaction.referenceId = BIGINT_ZERO; // Initialize to zero
     transaction.marketPlace = ""; // Initialize to zero
     transaction.amountSold = BIGINT_ZERO; // Initialize to zero
-    transaction.totalAmountSold = BIGINT_ZERO; // Initialize to zero
-    transaction.totalAmountBought = BIGINT_ZERO; // Initialize to zero
+    transaction.totalSoldOpenseaV1 = BIGINT_ZERO; // Initialize to zero
+    transaction.totalSoldOpenseaV2 = BIGINT_ZERO; // Initialize to zero
+    transaction.totalSoldSeaport = BIGINT_ZERO; // Initialize to zero
+    transaction.totalSoldOpenseaV2 = BIGINT_ZERO; // Initialize to zero
+    transaction.transactionCount = BIGINT_ZERO; // Initialize to zero
+    transaction.totalSold = BIGINT_ZERO; // Initialize to zero
     transaction.txHash = Bytes.empty(); // Initialize to an empty Bytes
   }
 

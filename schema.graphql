@@ -1,17 +1,22 @@
+enum TransactionType {
+  TRADE
+  MINT
+}
+
 # Account entity representing a user account in the system
 type Owner @entity {
   "Unique identifier for the account (typically the user's address)"
   id: ID!
 
   "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
-  tokens: [Nft!]! @derivedFrom(field: "owner")
+  tokens: [CryptoKitty!]! @derivedFrom(field: "owner")
 
   "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
   transactions: [Transaction!]! @derivedFrom(field: "owner")
 }
 
 # Transfer entity representing the transfer of the CryptoKitty NFT
-type Nft @entity {
+type CryptoKitty @entity {
   "Unique identifier for the transfer event"
   id: ID!
 
@@ -45,20 +50,29 @@ type Transaction @entity {
   "Address of the buyer; required for both mint and sale transactions."
   buyer: Bytes!
 
-  "Unique identifier of the NFT being transferred."
+  "Unique identifier of the NFT being transferred NFT/TokenId."
   referenceId: BigInt!
 
   "The marketplace the nft contract interacted with, likely a trade or mint"
   marketPlace: String!
 
-  "Amount of the NFT sold (relevant for sales)."
+  "Amount of the NFT sold"
   amountSold: BigInt!
 
-  "Total amount of NFTs sold in this transaction (relevant for sales)."
-  totalAmountSold: BigInt!
+  "Total amount for NFTs sold for OpenseaV1 transactions"
+  totalSoldOpenseaV1: BigInt!
 
-  "Total amount of NFTs bought in this transaction (relevant for sales)."
-  totalAmountBought: BigInt!
+  "Total amount for NFTs sold for OpenseaV2 transactions"
+  totalSoldOpenseaV2: BigInt!
+
+  "Total amount for NFTs sold for Seaports transactions"
+  totalSoldSeaport: BigInt!
+
+  "Count of how many times this NFT was involved in a transaction"
+  transactionCount: BigInt!
+
+  "Total amount for all Transactions for the NFT"
+  totalSold: BigInt!
 
   "Hash of the transaction."
   txHash: Bytes!
