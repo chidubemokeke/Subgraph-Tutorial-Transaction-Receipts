@@ -27,71 +27,74 @@ import { OPENSEA_SIGNATURE } from "./consts";
  */
 export function decodeSaleAmount(
   receipt: ethereum.TransactionReceipt | null,
-  transactionHash: Bytes
-): BigInt | null {
-  // Ensure the receipt is provided, else log and return null
+  event: ethereum.Event,
+  transactionHash: Bytes,
+  amount: BigInt
+): BigInt {
+  let kittyAddress: Address = Address.fromString(
+    "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+  );
+
+  let price = BigInt.fromI32(0);
+
+  // Check if the receipt is available
   if (!receipt) {
     log.debug("[decodeSaleAmount][{}] No receipt found", [
       transactionHash.toHexString(),
     ]);
-    return null;
+    return price; // Return default price (0) if receipt is null
   }
 
-  // Get logs from the receipt and ensure they exist
+  // Get logs from the transaction receipt
   let logs = receipt.logs;
-  if (!logs || logs.length === 0) {
-    log.debug("[decodeSaleAmount][{}] No logs found", [
-      transactionHash.toHexString(),
-    ]);
-    return null;
-  }
 
-  // Define the OrdersMatched event signature using Keccak-256 hash
-  let topicSignature = crypto.keccak256(
-    ByteArray.fromUTF8(
-      "OrdersMatched(bytes32,bytes32,address,address,uint256,bytes32)"
-    )
-  );
+  // Ensure the logs are present
+  if (logs.length > 0) {
+    // Loop through the logs to find the OrdersMatched event
+    for (let i = 0; i < logs.length; ++i) {
+      let logEntry = logs[i];
 
-  // Iterate through the logs to find the matching OrdersMatched event
-  for (let i = 0; i < logs.length; i++) {
-    let currentLog = logs[i];
+      // Define the signature for the OrdersMatched event
+      let openseaSignature = crypto.keccak256(
+        ByteArray.fromUTF8(
+          "OrdersMatched(bytes32,bytes32,address,address,uint256,bytes32)"
+        )
+      );
 
-    // Check if the log's first topic matches the OrdersMatched event signature
-    if (
-      currentLog.topics.length > 0 &&
-      currentLog.topics[0].equals(topicSignature)
-    ) {
-      // Verify that the log has enough topics to extract the sale amount
-      if (currentLog.topics.length >= 5) {
-        let saleAmount = ethereum.decode("uint256", currentLog.data); // Decode sale amount
+      // Check if the log matches the signature and contract address (CryptoKitties)
+      if (
+        logEntry.topics.length > 0 &&
+        logEntry.topics[0].equals(openseaSignature) &&
+        logEntry.address.equals(kittyAddress) // Match the contract address
+      ) {
+        // Decode the sale amount (fifth parameter) from the event data
+        let saleAmountDecoded = ethereum.decode("uint256", logEntry.data);
 
-        // If the sale amount is successfully decoded, log and return it
-        if (saleAmount) {
-          log.info("[decodeSaleAmount][{}] Sale Amount: {}", [
+        // Check if the decoding was successful
+        if (saleAmountDecoded) {
+          let saleAmount = saleAmountDecoded.toBigInt();
+          log.info("[decodeSaleAmount][{}] Sale amount: {}", [
             transactionHash.toHexString(),
             saleAmount.toString(),
           ]);
-          return saleAmount.toBigInt();
+
+          // Return the sale amount
+          return saleAmount;
         } else {
-          log.warning("[decodeSaleAmount][{}] Failed to decode sale amount", [
+          log.warning("[decodeSaleAmount][{}] Could not decode sale amount", [
             transactionHash.toHexString(),
           ]);
         }
-      } else {
-        log.warning(
-          "[decodeSaleAmount][{}] Not enough topics to decode sale amount",
-          [transactionHash.toHexString()]
-        );
       }
     }
+  } else {
+    log.warning("[decodeSaleAmount][{}] No logs found", [
+      transactionHash.toHexString(),
+    ]);
   }
 
-  // Log a warning if no OrdersMatched event was found and return null
-  log.warning("[decodeSaleAmount][{}] No matching OrdersMatched event found", [
-    transactionHash.toHexString(),
-  ]);
-  return null;
+  // Return default price if no sale amount is found
+  return price;
 }
 
 /**
@@ -102,7 +105,7 @@ export function decodeSaleAmount(
  * @param receipt - The transaction receipt containing logs to check for the OrdersMatched event.
  * @param transactionHash - The hash of the transaction being processed, used for logging.
  * @returns An object containing the buyer and seller addresses as Bytes, or null if not found.
- */
+ 
 export function decodeBuyerAndSeller(
   receipt: ethereum.TransactionReceipt | null,
   transactionHash: Bytes
@@ -174,4 +177,4 @@ export function decodeBuyerAndSeller(
   return { buyer: null, seller: null };
 }
 
-let receipt = event.receipt;
+let receipt = event.receipt;**/
