@@ -2,12 +2,13 @@ import {
   Transfer,
   Transfer as TransferEvent,
 } from "../../generated/CryptoKitties/CryptoKitties";
-import { Owner, Nft, Transaction } from "../../generated/schema";
+import { Owner, CryptoKitty, Transaction } from "../../generated/schema";
 
 export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(event.transaction.hash.toHex())(
-    event.logIndex.toI32()
+  let cryptoKitty = new Transfer(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toHex()
   );
+
   entity.from = event.params.from;
   entity.to = event.params.to;
   entity.tokenId = event.params.tokenId;

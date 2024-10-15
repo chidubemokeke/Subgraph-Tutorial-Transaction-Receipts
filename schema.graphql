@@ -1,38 +1,48 @@
-enum TransactionType {
-  TRADE
-  MINT
+enum Status {
+  Success
+  Failed
+}
+
+enum MarketPlace {
+  OpenSeaV1
+  OpenSeaV2
+  SeaPort
+  Unknown
 }
 
 # Account entity representing a user account in the system
 type Owner @entity {
-  "Unique identifier for the account (typically the user's address)"
+  "User's address, which serves as a unique identifier"
   id: ID!
 
-  "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
-  tokens: [CryptoKitty!]! @derivedFrom(field: "owner")
+  "List of Owned kitties by this account."
+  kitties: [CryptoKitty!]! @derivedFrom(field: "owner")
 
-  "List of NFTs owned by this account. Derived from the 'owner' field in the Token entity."
-  transactions: [Transaction!]! @derivedFrom(field: "owner")
+  "All transactions involving the user"
+  transactions: [Transaction!]! @derivedFrom(field: "participant")
 }
 
-# Transfer entity representing the transfer of the CryptoKitty NFT
+# CryptoKitty entity representing a specific NFT
 type CryptoKitty @entity {
-  "Unique identifier for the transfer event"
+  "Unique identifier for the CryptoKitty transfer event"
   id: ID!
 
-  "Owner of the Coven NFT"
+  "Reference to the transaction's owner (either buyer or seller)"
   owner: Owner!
 
-  "The unique token ID for the CryptoCoven NFT"
+  "The unique token ID"
   tokenId: BigInt!
 
-  "Timestamp of when the NFT was created/minted"
+  "Counter for how many times this NFT was involved in a transaction"
+  transactionCount: BigInt!
+
+  "Total value for all transactions related to this NFT"
+  totalSold: BigInt!
+
+  "Timestamp of the transaction"
   createdAt: BigInt!
 
-  "Index of the log within the transaction for tracking"
-  logIndex: BigInt!
-
-  "Hash of the transaction"
+  "Transaction hash of the transfer"
   txHash: Bytes!
 }
 
@@ -41,38 +51,29 @@ type Transaction @entity {
   "Unique identifier for each transaction."
   id: ID!
 
-  "Reference to the Owner entity involved in this transaction."
-  owner: Owner!
+  "Reference to the owner of the transaction (either buyer or seller)"
+  participant: Owner!
 
-  "Address of the seller; required if the transaction involves a mint."
+  "Seller's address (important for separating mint from sale transactions)"
   seller: Bytes!
 
-  "Address of the buyer; required for both mint and sale transactions."
+  "Buyer's address"
   buyer: Bytes!
 
   "Unique identifier of the NFT being transferred NFT/TokenId."
   referenceId: BigInt!
 
-  "The marketplace the nft contract interacted with, likely a trade or mint"
-  marketPlace: String!
+  "Transaction status (Success or Failed)"
+  status: Status!
 
-  "Amount of the NFT sold"
+  "Field to indicate if the transaction is a mint"
+  isMint: Boolean!
+
+  "The marketplace"
+  marketPlace: MarketPlace!
+
+  "Amount sold (if applicable)"
   amountSold: BigInt!
-
-  "Total amount for NFTs sold for OpenseaV1 transactions"
-  totalSoldOpenseaV1: BigInt!
-
-  "Total amount for NFTs sold for OpenseaV2 transactions"
-  totalSoldOpenseaV2: BigInt!
-
-  "Total amount for NFTs sold for Seaports transactions"
-  totalSoldSeaport: BigInt!
-
-  "Count of how many times this NFT was involved in a transaction"
-  transactionCount: BigInt!
-
-  "Total amount for all Transactions for the NFT"
-  totalSold: BigInt!
 
   "Hash of the transaction."
   txHash: Bytes!
