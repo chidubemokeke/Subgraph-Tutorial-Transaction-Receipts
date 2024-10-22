@@ -49,6 +49,12 @@ dataSources:
       file: ./src/mappings/crypto-kitties.ts
 ```
 
+## Schema Overview
+
+- Owner
+- CryptoKitty
+- Transaction
+
 ```gql
 # Enum representing different types of transactions (Mint, Sale, or Failed)
 enum TransactionType {
