@@ -1,4 +1,4 @@
-import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { CryptoKitty, Owner, Transaction } from "../../generated/schema";
 import { BIGINT_ZERO } from "./consts";
 
@@ -10,7 +10,7 @@ export enum TransactionType {
 }
 
 // Function to get or create an Account entity based on an Ethereum address
-export function getOrCreateAccount(address: Bytes): Owner {
+export function getOrCreateAccount(address: Address): Owner {
   // Convert the provided Ethereum address to a hexadecimal string for use as the unique ID for the Account entity
   let accountId = address.toHex();
 
@@ -22,9 +22,13 @@ export function getOrCreateAccount(address: Bytes): Owner {
     // If the account does not exist, create a new Account entity
     account = new Owner(accountId); // Use accountId as the unique identifier
 
+    // Initialize the kittiesCount to zero for new accounts
+    account.kittiesCount = BIGINT_ZERO;
+
     // Save the newly created account entity to the store to persist its state
     account.save();
   }
+
   // Return the account entity, which will be either the existing one or the newly created one
   return account as Owner;
 }
@@ -55,9 +59,6 @@ export function getOrCreateTransaction(transactionId: string): Transaction {
   // If the transaction entity does not exist, create a new one
   if (transaction == null) {
     transaction = new Transaction(transactionId);
-
-    // Initialize fields with default values
-    transaction.transactionType = TransactionType.Unknown.toString(); // Default to Failed
     transaction.amountSold = BIGINT_ZERO; // Initialize to zero
     transaction.txHash = Bytes.empty(); // Initialize to an empty Bytes
   }

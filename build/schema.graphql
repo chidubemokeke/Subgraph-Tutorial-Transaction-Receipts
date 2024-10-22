@@ -14,6 +14,9 @@ type Owner @entity {
   "List of CryptoKitties owned by this user"
   kitties: [CryptoKitty!]! @derivedFrom(field: "owner")
 
+  "Number of CryptoKitties owned by this Owner" # Ordering by a derived field's length is not supported, which is why a separate count field.
+  kittiesCount: BigInt!
+
   "All transactions involving this user, derived from the Transaction.participant field."
   transactions: [Transaction!]! @derivedFrom(field: "participant")
 }

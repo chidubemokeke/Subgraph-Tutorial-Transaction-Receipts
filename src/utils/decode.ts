@@ -80,6 +80,6 @@ export function determineTransactionType(
     }
   }
 
-  // Default to failed if none of the conditions match.
+  // Default to unknown if none of the conditions match.
   return TransactionType.Unknown;
 }

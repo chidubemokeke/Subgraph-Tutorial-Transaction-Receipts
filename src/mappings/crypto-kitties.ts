@@ -24,15 +24,32 @@ export function handleTransfer(event: TransferEvent): void {
   let buyer = Owner.load(toAccount.id);
   if (!buyer) {
     buyer = new Owner(toAccount.id);
-    buyer.save();
+    buyer.kittiesCount = BIGINT_ZERO; // Initialize kittiesCount for buyer
   }
 
   // Load or create a new owner entity for the 'from' address (seller)
   let seller = Owner.load(fromAccount.id);
   if (!seller) {
     seller = new Owner(fromAccount.id);
-    seller.save();
+    seller.kittiesCount = BIGINT_ZERO; // Initialize kittiesCount for seller
   }
+
+  // Handle mint operation (from address is a zero address)
+  if (event.params.from.equals(ZERO_ADDRESS)) {
+    // If it's a mint, we don't decrement the seller's count
+    seller.kittiesCount = BIGINT_ZERO; // Explicitly set to zero for minting
+  } else {
+    // For regular transfers, decrement the seller's kittiesCount if greater than zero
+    if (seller.kittiesCount.gt(BIGINT_ZERO)) {
+      seller.kittiesCount = seller.kittiesCount.minus(BIGINT_ONE); // Decrement the count
+    }
+  }
+
+  // Increment kittiesCount for the buyer since they are receiving an NFT
+  buyer.kittiesCount = buyer.kittiesCount.plus(BIGINT_ONE);
+
+  buyer.save();
+  seller.save();
 
   // Create a unique ID for this transfer (could be tx hash + tokenId)
   let transactionId =
@@ -48,7 +65,7 @@ export function handleTransfer(event: TransferEvent): void {
   transaction.participant = buyer.id; // Set the buyer as the participant
 
   // Check if the transfer is a mint operation (from address is a zero address)
-  if (event.params.from == ZERO_ADDRESS) {
+  if (event.params.from.equals(ZERO_ADDRESS)) {
     transaction.transactionType = getTransactionString(TransactionType.Mint); // Convert enum to string for storage
   } else {
     // Determine the transaction type using the receipt logs for other transfers
@@ -69,7 +86,7 @@ export function handleTransfer(event: TransferEvent): void {
 
   transaction.kitty = kitty.id;
 
-  // Call decodeSaleAmount
+  // Call decoded SaleAmount from the price params in th AuctionSuccessful event from the logs
   let amountSold = getAuctionSaleAmount(event);
 
   // Check if a valid amount was decoded, else assign a default value (0)
