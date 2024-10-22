@@ -1,17 +1,11 @@
 import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { CryptoKitty, Owner, Transaction } from "../../generated/schema";
 import { BIGINT_ZERO } from "./consts";
-//import { decodeStatus } from "./decode";
 
-export enum Status {
-  Success,
+export enum TransactionType {
+  Mint,
+  Sale,
   Failed,
-}
-
-export enum MarketPlace {
-  OpenSeaV1,
-  OpenSeaV2,
-  Seaport,
   Unknown,
 }
 
@@ -46,9 +40,7 @@ export function getOrCreateKitty(tokenId: BigInt): CryptoKitty {
     kitty = new CryptoKitty(kittyId);
     kitty.transactionCount = BIGINT_ZERO; // Initialize transaction count
     kitty.totalSold = BIGINT_ZERO; // Initialize total sold
-
-    // Save the newly created CryptoKitty entity
-    kitty.save();
+    kitty.txHash = Bytes.empty(); // Initialize to an empty Bytes
   }
 
   // Return the CryptoKitty entity, either the existing one or the newly created one
@@ -56,21 +48,16 @@ export function getOrCreateKitty(tokenId: BigInt): CryptoKitty {
 }
 
 // Function to get or create a Transaction entity based on the transaction ID
-export function getOrCreateTransaction(transactionId: Bytes): Transaction {
+export function getOrCreateTransaction(transactionId: string): Transaction {
   // Attempt to load the existing Transaction entity using the provided transaction ID
-  let transaction = Transaction.load(transactionId.toHex());
+  let transaction = Transaction.load(transactionId);
 
   // If the transaction entity does not exist, create a new one
   if (transaction == null) {
-    transaction = new Transaction(transactionId.toHex());
+    transaction = new Transaction(transactionId);
 
     // Initialize fields with default values
-    transaction.seller = Bytes.empty(); // Initialize to an empty Bytes
-    transaction.buyer = Bytes.empty(); // Initialize to an empty Bytes
-    transaction.referenceId = BIGINT_ZERO; // Initialize to zero
-    transaction.status = Status.Success; // Default status can be adjusted as needed
-    transaction.isMint = false; // Default to false
-    transaction.marketPlace = MarketPlace.Unknown; // Default to unknown marketplace
+    transaction.transactionType = TransactionType.Unknown.toString(); // Default to Failed
     transaction.amountSold = BIGINT_ZERO; // Initialize to zero
     transaction.txHash = Bytes.empty(); // Initialize to an empty Bytes
   }

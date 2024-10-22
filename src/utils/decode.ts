@@ -1,79 +1,85 @@
-import {
-  Bytes,
-  ethereum,
-  log,
-  crypto,
-  ByteArray,
-  BigInt,
-} from "@graphprotocol/graph-ts";
-import { OPENSEA_SIGNATURE } from "./consts";
+import { Bytes, ethereum, log, BigInt } from "@graphprotocol/graph-ts";
+import { AUCTION_CANCEL_SIG, AUCTION_SUCCESS_SIG } from "./consts";
+import { TransactionType } from "./entities";
 
-/**
- * Helper function to decode the transaction amount from the OrdersMatched event logs.
- *
- * @param logs - The list of logs from the transaction receipt.
- * @param currentEventLogIndex - The log index of the current event being processed.
- * @returns - The decoded transaction amount (price) as BigInt, or null if not found.
- */
-export function decodeSaleAmount(
-  logs: Array<ethereum.Log>,
-  currentEventLogIndex: BigInt // Ensure this is BigInt for compatibility
-): BigInt | null {
-  let foundIndex: i32 = -1;
-
-  // Loop through all logs to find the log that matches the current event log index.
-  for (let i = 0; i < logs.length; i++) {
-    const currLog = logs.at(i); // Get the log at index `i`.
-
-    if (currLog.logIndex.equals(currentEventLogIndex)) {
-      // Use BigInt for comparison
-      foundIndex = i; // Store the index of the current log.
-      break; // Stop searching as we've found the matching log.
-    }
+export function getAuctionSaleAmount(event: ethereum.Event): BigInt | null {
+  // Check if the event has a transaction receipt. The receipt contains all logs from the transaction.
+  if (!event.receipt) {
+    return null; // If there's no receipt, we can't proceed with log analysis.
   }
 
-  // Ensure a valid index is found and there are enough logs after the current log to check for OrdersMatched events.
-  if (foundIndex >= 0 && foundIndex + 1 < logs.length) {
-    // Loop through the next logs to find any OrdersMatched events
-    for (let i = foundIndex + 1; i < logs.length; i++) {
-      const nextLog = logs.at(foundIndex + 1); // Get the next log entry.
+  const currentLogIndex = event.logIndex; // Log index of the current event being processed (Transfer event).
+  const logs = event.receipt!.logs; // Access all logs from the transaction receipt.
 
-      // Calculate the event signature for the OrdersMatched event.
-      const ordersMatchedSig = crypto.keccak256(
-        ByteArray.fromUTF8(
-          "OrdersMatched(bytes32,bytes32,address,address,uint256,bytes32)"
-        )
-      );
+  // Loop through logs to find any AuctionSuccessful events that occur before the Transfer event.
+  for (let i = 0; i < logs.length; i++) {
+    const currentLog = logs[i]; // Current log in the loop.
 
-      // Check if the first topic of this log matches the OrdersMatched event signature.
-      if (
-        nextLog.topics.length > 0 &&
-        nextLog.topics.at(0).equals(ordersMatchedSig)
-      ) {
-        // Decode the transaction amount (fifth parameter - price) from the event data.
-        // The price parameter starts at byte 128 and ends at byte 160.
-        const priceStart = 128; // Start of the price parameter
-        const priceEnd = 160; // End of the price parameter
+    // Ensure that the log's index (from the logs array) is less than the current Transfer event's log index
+    // Convert i to BigInt for comparison with currentLogIndex
+    if (BigInt.fromI32(i) >= currentLogIndex) {
+      // Stop searching since we have passed the logs that occurred before the Transfer event.
+      break;
+    }
 
-        // Slice the data to get the price parameter and decode it as a uint256.
-        const transactionAmountDecoded = ethereum.decode(
+    // Check if the log corresponds to the AuctionSuccessful event by comparing its signature (topic0) and the contract address.
+    if (
+      currentLog.topics.length > 0 &&
+      currentLog.topics[0] == AUCTION_SUCCESS_SIG
+    ) {
+      // The `AuctionSuccessful` event data contains several fields. We are interested in the `totalPrice`,
+      // which is the second parameter (a `uint256`), located in the data section of the log.
+      // Extract and decode the `AuctionPrice` from the log's data.
+      // The `AuctionPrice` is located from bytes 32 to 64 in the log's data (the second parameter in the AuctionSuccessful event structure).
+      const saleAmount = ethereum
+        .decode(
           "uint256",
-          Bytes.fromUint8Array(nextLog.data.subarray(priceStart, priceEnd))
-        );
+          Bytes.fromUint8Array(currentLog.data.subarray(32, 64)) // Corresponds to the second parameter
+        )!
+        .toBigInt();
 
-        // Check if the decoding was successful.
-        if (transactionAmountDecoded) {
-          // Return the decoded price as BigInt.
-          return transactionAmountDecoded.toBigInt();
-        } else {
-          log.warning("Could not decode transaction amount from log", [
-            nextLog.transactionHash.toHexString(),
-          ]);
-        }
+      if (saleAmount) {
+        return saleAmount; // Return the sale amount if decoding succeeds
+      } else {
+        // If decoding fails, log a warning with the transaction hash.
+        log.warning(
+          "[getAuctionSaleAmount] Failed to decode sale amount in transaction {}",
+          [event.transaction.hash.toHexString()]
+        );
+        return null; // Return null if decoding fails
       }
     }
   }
 
-  // Return null if no transaction amount is found or if the event is not matched.
+  // If no matching AuctionSuccessful event was found before the Transfer event, return null
   return null;
+}
+
+export function determineTransactionType(
+  event: ethereum.Event
+): TransactionType {
+  // Check if the event has a transaction receipt. The receipt contains all logs from the transaction.
+  if (!event.receipt) {
+    return TransactionType.Failed; // If there's no receipt, mark the transaction as failed.
+  }
+
+  const logs = event.receipt!.logs; // Access all logs from the transaction receipt.
+
+  // Loop through all logs in the transaction receipt.
+  for (let i = 0; i < logs.length; i++) {
+    const log = logs[i]; // Current log in the loop.
+
+    // Check if the log corresponds to the AuctionSuccessful event.
+    if (log.topics.length > 0 && log.topics[0] == AUCTION_SUCCESS_SIG) {
+      return TransactionType.Sale; // Return It's a sale transaction.
+    }
+
+    // Check if the log matches the AuctionCancelled signature.
+    if (log.topics.length > 0 && log.topics[0] == AUCTION_CANCEL_SIG) {
+      return TransactionType.Failed; // Auction was cancelled, so mark as failed.
+    }
+  }
+
+  // Default to failed if none of the conditions match.
+  return TransactionType.Unknown;
 }

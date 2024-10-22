@@ -1,4 +1,4 @@
-import { BigInt, Address, ByteArray, crypto } from "@graphprotocol/graph-ts";
+import { crypto, BigInt, Address, ByteArray } from "@graphprotocol/graph-ts";
 
 // Define a constant representing the value zero as a BigInt object.
 export const BIGINT_ZERO = BigInt.fromI32(0);
@@ -17,33 +17,38 @@ export const CRYPTOKITTIES_ADDRESS =
 // Convert the string address to the Address type.
 export const CRYPTOKITTY: Address = Address.fromString(CRYPTOKITTIES_ADDRESS);
 
+// Constant representing the address of the CryptoKitty Auction Contract.
+export const KITTIES_AUCTION_ADDRESS =
+  "0xb1690c08e213a35ed9bab7b318de14420fb57d8c";
+
+// Convert the string address to the Address type.
+export const KITTY_AUCTION: Address = Address.fromString(
+  KITTIES_AUCTION_ADDRESS
+);
+
 // Ethereum does not store the full human-readable event signature (e.g.,"Transfer(address,address,uint256)")
 // It stores the Keccak-256 hash of the event signature in topic 0
 // It uniquely identifies the event type in the transaction logs
-// Hash the Transfer event signature using the Keccak-256 hashing algorithm
-export const KITTY_SIGNATURE = crypto.keccak256(
+// Hash the AuctionSuccessful event signature using the Keccak-256 hashing algorithm
+
+// Hash the event signature using keccak256 (to match against logs.)
+export const AUCTION_SUCCESS_SIG = crypto.keccak256(
+  ByteArray.fromUTF8("AuctionSuccessful(uint256,uint256,address)")
+);
+
+export const AUCTION_CANCEL_SIG = crypto.keccak256(
+  ByteArray.fromUTF8("AuctionCancelled(uint256)")
+);
+
+export const AIRDROP_SIG = crypto.keccak256(
+  ByteArray.fromUTF8("Birth(address,uint256,uint256,uint256,uint256)")
+);
+
+export const TRANSFER_EVENT_SIG = crypto.keccak256(
   ByteArray.fromUTF8("Transfer(address,address,uint256)")
 );
 
-// List of some Marketplaces the CryptoKitties NFT is listed/Traded
-
-// Constant representing the address of the OpenSeaV1 contract.
-export const OPENSEAV1_ADDRESS = "0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b";
-// Convert the string address to the Address type.
-export const OPENSEAV1: Address = Address.fromString(OPENSEAV1_ADDRESS);
-// Hash the OrdersMatched event signature using the Keccak-256 hashing algorithm.
-export const OPENSEA_SIGNATURE = crypto.keccak256(
-  ByteArray.fromUTF8(
-    "OrdersMatched(bytes32,bytes32,address,address,uint256,bytes32)"
-  )
-);
-
-// Constant representing the address of the OpenSeaV2 contract.
-export const OPENSEAV2_ADDRESS = "0x7f268357A8c2552623316e2562D90e642bB538E5";
-// Convert the string address to the Address type.
-export const OPENSEAV2: Address = Address.fromString(OPENSEAV2_ADDRESS);
-
-// Constant representing the address of the Seaport contract.
+// Constant representing the address of the Seaport contract (To match sales)
 export const SEAPORT_ADDRESS = "0x0000000000000068F116a894984e2DB1123eB395";
 // Convert the string address to the Address type.
 export const SEAPORT: Address = Address.fromString(SEAPORT_ADDRESS);
@@ -54,3 +59,12 @@ export const SEAPORT_SIGNATURE = crypto.keccak256(
     "OrderFulfilled(bytes32,address,address,address,tuple[],tuple[])"
   )
 );
+
+/**struct ConsiderationItem {
+    ItemType itemType;
+    address token;
+    uint256 identifierOrCriteria;
+    uint256 startAmount;
+    uint256 endAmount;
+    address payable recipient;
+} */
