@@ -1,6 +1,10 @@
 # Understanding Transaction Receipts in Subgraphs
 
-This repository serves as a comprehensive guide to understanding and utilizing transaction receipts within subgraphs. We will explore how transaction receipts can enhance the way we interact with blockchain data and how they can be effectively utilized in the context of NFT smart contracts, specifically the CryptoKitties contract.
+This repository is a simple guide to understanding and utilizing transaction receipts within subgraphs. We will explore how transaction receipts can enhance the way we interact with blockchain data and how they can be effectively utilized in the context of NFT smart contracts, specifically the CryptoKitties contract.
+
+In this subgraph, by setting receipt to true in the manifest, we can access the transaction logs to retrieve the saleAmount from a different event parameters and logIndice in the same Transaction.
+
+We also use transaction receipts to check the type of a transaction.
 
 ## What Are Transaction Receipts?
 
