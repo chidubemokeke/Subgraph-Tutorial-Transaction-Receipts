@@ -4,7 +4,7 @@ This repository is a simple guide to understanding and utilizing transaction rec
 
 In this subgraph, by setting receipt to true in the manifest, we can access the transaction logs to retrieve the saleAmount from a different event parameters and logIndice in the same Transaction.
 
-We also use transaction receipts to check the type of a transaction.
+We also use transaction receipts to check the type of a transaction and assign an Enum value to it.
 
 ## What Are Transaction Receipts?
 
