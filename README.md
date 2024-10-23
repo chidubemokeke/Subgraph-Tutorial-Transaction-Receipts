@@ -1,6 +1,6 @@
 # Understanding Transaction Receipts in Subgraphs
 
-This repository serves as a comprehensive guide to understanding and utilizing transaction receipts within subgraphs. We will explore how transaction receipts can enhance the way we interact with blockchain data and how they can be effectively utilized in the context of NFT smart contracts, specifically the CryptoCoven contract.
+This repository serves as a comprehensive guide to understanding and utilizing transaction receipts within subgraphs. We will explore how transaction receipts can enhance the way we interact with blockchain data and how they can be effectively utilized in the context of NFT smart contracts, specifically the CryptoKitties contract.
 
 ## What Are Transaction Receipts?
 
