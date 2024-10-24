@@ -236,4 +236,173 @@ Each event in the Ethereum blockchain is encoded into a log with the following k
 
 - data: Contains the rest of the parameters, encoded as ABI-encoded data.
 
-## Example Queries
+## Sample Queries
+
+## Query 1: Top Owner by Kitty Count and Active Sales
+
+This query retrieves the owner with the most CryptoKitties and their related sales activity:
+
+```gql
+{
+  owners(first: 1, orderBy: kittiesCount, orderDirection: desc) {
+    id
+    kittiesCount
+    transactions(where: { transactionType: Sale, amountSold_gt: "0" }) {
+      id
+    }
+    kitties(
+      where: { totalSold_gt: "0" }
+      first: 1
+      orderBy: transactionCount
+      orderDirection: desc
+    ) {
+      transactionCount
+    }
+  }
+}
+```
+
+## Returns
+
+```gql
+{
+  "data": {
+    "owners": [
+      {
+        "id": "0xb1690c08e213a35ed9bab7b318de14420fb57d8c",
+        "kittiesCount": "20005",
+        "transactions": [],
+        "kitties": [
+          {
+            "transactionCount": "28"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Retrieve Top CryptoKitty by Transaction Count with Sales
+
+This query fetches the CryptoKitty with the highest transaction count that has been sold for a total amount greater than zero
+
+```gql
+{
+  cryptoKitties(
+    first: 1
+    orderBy: transactionCount
+    orderDirection: desc
+    where: { totalSold_gt: "0" }
+  ) {
+    id
+    tokenId
+    transactionCount
+    totalSold
+    owner {
+      id
+      kittiesCount
+    }
+  }
+}
+```
+
+## Returns2
+
+```gql
+{
+  "data": {
+    "cryptoKitties": [
+      {
+        "id": "0xd4fb",
+        "tokenId": "54523",
+        "transactionCount": "37",
+        "totalSold": "16720789450827353920",
+        "owner": {
+          "id": "0xa265881fe0ae9379a15d9d944fa3a39abcd8bbcb",
+          "kittiesCount": "13"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Retrieve Failed Transactions for CryptoKitties with High Transaction Counts
+
+This query retrieves the first two transactions of type "Failed" for CryptoKitties that have a transaction count of 46 or more
+
+```gql
+{
+  transactions(
+    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
+    first: 2
+  ) {
+    kitty {
+      id
+      tokenId
+      transactionCount
+      owner {
+        id
+      }
+    }
+    transactionType
+    txHash
+  }
+}
+```
+
+## Return3
+
+```gql
+{
+  transactions(
+    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
+    first: 2
+  ) {
+    kitty {
+      id
+      tokenId
+      transactionCount
+      owner {
+        id
+      }
+    }
+    transactionType
+    txHash
+  }
+}
+```
+
+```gql
+{
+  "data": {
+    "transactions": [
+      {
+        "kitty": {
+          "id": "0x919",
+          "tokenId": "2329",
+          "transactionCount": "47",
+          "owner": {
+            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x281bbddf2c6654680a689e720eeb48926fc4dae22b9fd863ed2cda2df22b8644"
+      },
+      {
+        "kitty": {
+          "id": "0x919",
+          "tokenId": "2329",
+          "transactionCount": "47",
+          "owner": {
+            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x370dcdaff2440c033f13e26dd68ee05a7c2db4da276172383a73713dfbd529d6"
+      }
+    ]
+  }
+}
+```

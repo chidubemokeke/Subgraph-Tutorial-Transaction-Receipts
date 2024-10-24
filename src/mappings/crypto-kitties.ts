@@ -81,6 +81,24 @@ export function handleTransfer(event: TransferEvent): void {
   kitty.owner = buyer.id;
   kitty.tokenId = tokenId;
   kitty.transactionCount = kitty.transactionCount.plus(BIGINT_ONE);
+
+  // Update totalSold if the transaction was a sale
+  if (
+    transaction.transactionType === getTransactionString(TransactionType.Sale)
+  ) {
+    const amountSold = getAuctionSaleAmount(event);
+    if (amountSold) {
+      kitty.totalSold = kitty.totalSold.plus(amountSold); // Update the total sold amount
+    }
+  }
+
+  // Save the CryptoKitty entity
+  kitty.txHash = event.transaction.hash; // Store the transaction hash
+  kitty.save();
+
+  // Set the transaction's kitty reference
+  transaction.kitty = kitty.id;
+
   kitty.txHash = event.transaction.hash;
   kitty.save();
 
