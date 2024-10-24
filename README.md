@@ -261,27 +261,7 @@ This query retrieves failed transactions for CryptoKitties that have been involv
 }
 ```
 
-## Return3
-
-```gql
-{
-  transactions(
-    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
-  ) {
-    kitty {
-      id
-      tokenId
-      transactionCount
-      owner {
-        id
-      }
-    }
-    transactionType
-    txHash
-  }
-}
-```
+## Returns2
 
 ```gql
 {
@@ -316,21 +296,26 @@ This query retrieves failed transactions for CryptoKitties that have been involv
 }
 ```
 
-## Query 3: Retrieve Top 3 CryptoKitties by Sales Transactions
+## Retrieve Failed Transactions for CryptoKitties with High Transaction Counts
 
-This query fetches the top 2 CryptoKitties that have been involved in the most sales, along with their sale amount and owner details.
+This query retrieves the first two transactions of type "Failed" for CryptoKitties that have a transaction count of 46 or more
 
 ```gql
 {
-  cryptoKitties(first: 2, orderBy: transactionCount, orderDirection: desc) {
-    id
-    tokenId
-    transactionCount
-    totalSold
-    owner {
+  transactions(
+    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
+    first: 2
+  ) {
+    kitty {
       id
-      kittiesCount
+      tokenId
+      transactionCount
+      owner {
+        id
+      }
     }
+    transactionType
+    txHash
   }
 }
 ```
@@ -340,36 +325,30 @@ This query fetches the top 2 CryptoKitties that have been involved in the most s
 ```gql
 {
   "data": {
-    "cryptoKitties": [
+    "transactions": [
       {
-        "id": "0xebc83",
-        "tokenId": "965763",
-        "transactionCount": "284",
-        "totalSold": "246000000000000000",
-        "owner": {
-          "id": "0x179d698f5a1c84c3ff4c5eb04e553c15a0c1d8d8",
-          "kittiesCount": "2"
-        }
+        "kitty": {
+          "id": "0x919",
+          "tokenId": "2329",
+          "transactionCount": "47",
+          "owner": {
+            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x281bbddf2c6654680a689e720eeb48926fc4dae22b9fd863ed2cda2df22b8644"
       },
       {
-        "id": "0xd15a6",
-        "tokenId": "857510",
-        "transactionCount": "279",
-        "totalSold": "14000000000000000",
-        "owner": {
-          "id": "0xd01c92937400dd1ece24992b1dc44aeaa47ae72a",
-          "kittiesCount": "37"
-        }
-      },
-      {
-        "id": "0xf3243",
-        "tokenId": "995907",
-        "transactionCount": "278",
-        "totalSold": "50873544697971783",
-        "owner": {
-          "id": "0xe738725cdcc41c91f734dd7b5b9659df994d6dda",
-          "kittiesCount": "2"
-        }
+        "kitty": {
+          "id": "0x919",
+          "tokenId": "2329",
+          "transactionCount": "47",
+          "owner": {
+            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x370dcdaff2440c033f13e26dd68ee05a7c2db4da276172383a73713dfbd529d6"
       }
     ]
   }
