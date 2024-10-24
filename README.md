@@ -116,34 +116,50 @@ The function below demonstrates how to retrieve the sale amount from an AuctionS
 
 ```typescript
 export function getAuctionSaleAmount(event: ethereum.Event): BigInt | null {
+  // Ensure the event has a receipt with logs to analyze
   if (!event.receipt) {
-    return null; // No receipt, so we can't access logs
+    return null; // No logs available, return null
   }
 
-  const currentLogIndex = event.logIndex;
-  const logs = event.receipt.logs; // Access all logs from the receipt
+  const currentLogIndex = event.logIndex; // Get the index of the current Transfer event
+  const logs = event.receipt!.logs; // Access all logs in the receipt
 
-  // Loop through logs to find the AuctionSuccessful event before the Transfer
+  // Loop through logs preceding the current event to find AuctionSuccessful
   for (let i = 0; i < logs.length; i++) {
-    const currentLog = logs[i];
+    const currentLog = logs[i]; // Current log in the iteration
 
-    // Check if the log occurred before the current Transfer event
-    if (BigInt.fromI32(i) >= currentLogIndex) break;
+    // Stop if the log index exceeds the current event's index
+    if (BigInt.fromI32(i) >= currentLogIndex) {
+      break; // No need to check further logs
+    }
 
-    // Check for AuctionSuccessful event by comparing its signature (topic[0])
-    if (currentLog.topics[0] == AUCTION_SUCCESS_SIG) {
-      // Extract sale amount (second parameter in event data)
+    // Identify AuctionSuccessful events by checking their signature
+    if (
+      currentLog.topics.length > 0 &&
+      currentLog.topics[0] == AUCTION_SUCCESS_SIG
+    ) {
+      // Decode the sale amount, which is the second parameter in the log data
       const saleAmount = ethereum
         .decode(
-          "uint256",
-          Bytes.fromUint8Array(currentLog.data.subarray(32, 64))
+          "uint256", // Decode the data as a uint256
+          Bytes.fromUint8Array(currentLog.data.subarray(32, 64)) // Extract second parameter
         )!
-        .toBigInt();
+        .toBigInt(); // Convert the decoded value to BigInt for further use
 
-      return saleAmount ? saleAmount : null;
+      // Return the sale amount if decoding is successful, otherwise log a warning
+      if (saleAmount) {
+        return saleAmount;
+      } else {
+        log.warning(
+          "[getAuctionSaleAmount] Failed to decode sale amount in tx {}",
+          [event.transaction.hash.toHexString()]
+        );
+        return null;
+      }
     }
   }
 
+  // Return null if no matching AuctionSuccessful event is found before the Transfer event
   return null;
 }
 ```
@@ -156,25 +172,29 @@ This function determines the type of transaction based on the logs, identifying 
 export function determineTransactionType(
   event: ethereum.Event
 ): TransactionType {
-  if (!event.receipt) return TransactionType.Failed;
+  // Ensure the event has a receipt with logs to analyze
+  if (!event.receipt) {
+    return TransactionType.Failed; // No receipt, consider the transaction failed
+  }
 
-  const logs = event.receipt.logs;
+  const logs = event.receipt!.logs; // Access all logs in the receipt
 
-  // Loop through all logs in the transaction receipt
+  // Loop through all logs to determine the transaction type
   for (let i = 0; i < logs.length; i++) {
-    const log = logs[i];
+    const log = logs[i]; // Current log in the iteration
 
-    // If AuctionSuccessful event is found
-    if (log.topics[0] == AUCTION_SUCCESS_SIG) {
-      return TransactionType.Sale;
+    // Identify AuctionSuccessful events
+    if (log.topics.length > 0 && log.topics[0] == AUCTION_SUCCESS_SIG) {
+      return TransactionType.Sale; // It's a sale transaction
     }
 
-    // If AuctionCancelled event is found
-    if (log.topics[0] == AUCTION_CANCEL_SIG) {
-      return TransactionType.Failed;
+    // Identify AuctionCancelled events
+    if (log.topics.length > 0 && log.topics[0] == AUCTION_CANCEL_SIG) {
+      return TransactionType.Failed; // Transaction failed due to auction cancellation
     }
   }
 
+  // Default to Unknown if no matching events are found
   return TransactionType.Unknown;
 }
 ```
