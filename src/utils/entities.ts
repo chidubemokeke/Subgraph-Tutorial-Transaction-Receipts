@@ -9,60 +9,48 @@ export enum TransactionType {
   Unknown,
 }
 
-// Function to get or create an Account entity based on an Ethereum address
+// Retrieves or creates an Owner entity based on an Ethereum address
 export function getOrCreateAccount(address: Address): Owner {
-  // Convert the provided Ethereum address to a hexadecimal string for use as the unique ID for the Account entity
-  let accountId = address.toHex();
+  let accountId = address.toHex(); // Use the address as a unique ID
 
-  // Try to load the account entity from the store using the accountId
-  let account = Owner.load(accountId);
+  let account = Owner.load(accountId); // Try to load the entity
 
-  // Check if the account entity exists in the store
-  if (account == null) {
-    // If the account does not exist, create a new Account entity
-    account = new Owner(accountId); // Use accountId as the unique identifier
-
-    // Initialize the kittiesCount to zero for new accounts
-    account.kittiesCount = BIGINT_ZERO;
-
-    // Save the newly created account entity to the store to persist its state
-    account.save();
+  // If no existing entity, create and initialize it
+  if (!account) {
+    account = new Owner(accountId);
+    account.kittiesCount = BIGINT_ZERO; // Start with zero owned CryptoKitties
+    account.save(); // Save to persist changes
   }
 
-  // Return the account entity, which will be either the existing one or the newly created one
-  return account as Owner;
+  return account as Owner; // Return the existing or new entity
 }
 
-// Function to get or create a CryptoKitty entity based on the tokenId
+// Retrieves or creates a CryptoKitty entity based on the tokenId
 export function getOrCreateKitty(tokenId: BigInt): CryptoKitty {
-  // Use the tokenId as the unique identifier for CryptoKitty
-  let kittyId = tokenId.toHex();
-  let kitty = CryptoKitty.load(kittyId);
+  let kittyId = tokenId.toHex(); // Use the tokenId as a unique ID
+  let kitty = CryptoKitty.load(kittyId); // Try to load the entity
 
-  // If CryptoKitty does not exist, create a new one
-  if (kitty == null) {
+  // If no existing entity, create and initialize it
+  if (!kitty) {
     kitty = new CryptoKitty(kittyId);
-    kitty.transactionCount = BIGINT_ZERO; // Initialize transaction count
-    kitty.totalSold = BIGINT_ZERO; // Initialize total sold
-    kitty.txHash = Bytes.empty(); // Initialize to an empty Bytes
+    kitty.transactionCount = BIGINT_ZERO; // Initialize number of transactions
+    kitty.totalSold = BIGINT_ZERO; // Initialize total sales amount
+    kitty.txHash = Bytes.empty(); // Empty transaction hash
   }
 
-  // Return the CryptoKitty entity, either the existing one or the newly created one
-  return kitty as CryptoKitty;
+  return kitty as CryptoKitty; // Return the existing or new entity
 }
 
-// Function to get or create a Transaction entity based on the transaction ID
+// Retrieves or creates a Transaction entity based on the transactionId
 export function getOrCreateTransaction(transactionId: string): Transaction {
-  // Attempt to load the existing Transaction entity using the provided transaction ID
-  let transaction = Transaction.load(transactionId);
+  let transaction = Transaction.load(transactionId); // Try to load the entity
 
-  // If the transaction entity does not exist, create a new one
+  // If no existing entity, create and initialize it
   if (transaction == null) {
     transaction = new Transaction(transactionId);
-    transaction.amountSold = BIGINT_ZERO; // Initialize to zero
-    transaction.txHash = Bytes.empty(); // Initialize to an empty Bytes
+    transaction.amountSold = BIGINT_ZERO; // Initialize sale amount
+    transaction.txHash = Bytes.empty(); // Empty transaction hash
   }
 
-  // Return the Transaction entity, either existing or newly created
-  return transaction as Transaction;
+  return transaction as Transaction; // Return the existing or new entity
 }

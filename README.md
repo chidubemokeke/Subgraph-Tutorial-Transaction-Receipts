@@ -1,24 +1,31 @@
 # Understanding Transaction Receipts in Subgraphs
 
-This repository is a simple guide to understanding and utilizing transaction receipts within subgraphs. We will explore how transaction receipts can enhance the way we interact with blockchain data and how they can be effectively utilized in the context of NFT smart contracts, specifically the CryptoKitties contract.
+This repository is a simple guide to understanding and utilizing transaction receipts within subgraphs. We'll explore how transaction receipts can enhance how we interact with blockchain data, particularly within NFT smart contracts, using the CryptoKitties contract as an example.
 
-In this subgraph, by setting receipt to true in the manifest, we can access the transaction logs to retrieve the saleAmount from a different event parameters and logIndice in the same Transaction.
-
-We also use transaction receipts to check the type of a transaction and assign an Enum value to it.
+By setting receipt: true in the manifest, we can access transaction logs to retrieve important data such as the sale amount from different event parameters and logIndex in the same transaction. Transaction receipts are also used to determine the type of transaction and assign an appropriate Enum value to it.
 
 ## What Are Transaction Receipts?
 
-Transaction receipts are essential components in blockchain transactions, providing detailed information about the outcome of a transaction. Created after a transaction has been mined, a receipt provides the outcome of the transaction (whether it succeeded or failed), the gas used, logs all events triggered during its execution, and other crucial data. Understanding transaction receipts is fundamental for developers looking to build efficient and reliable subgraphs.
+A transaction receipt is a confirmation record created after a transaction is mined. It provides crucial details such as:
+
+- Whether the transaction succeeded or failed.
+- Gas used.
+- Logs of events triggered during execution.
+- Other important data relevant to the transaction.
+
+These receipts are vital for developers because they allow deep insights into what occurred during the transaction, beyond just a confirmation of its success.
 
 ## Why Use Transaction Receipts?
 
-Utilizing transaction receipts can significantly enhance your subgraph's functionality by allowing you to:
+Transaction receipts can improve the functionality of your subgraph by allowing you to:
 
-Track Events: Capture and log events emitted by smart contracts, which can be critical for monitoring contract interactions.
-Analyze Performance: Assess the gas efficiency of transactions to optimize contract usage.
-Debug Issues: Identify problems with transactions by examining the status and logs in the receipt.
+- Track Events: Log all contract events in a transaction (e.g., sales or transfers).
+- Analyze Gas Usage: Optimize contract performance by analyzing how much gas was consumed.
+- Debug Transactions: Find and fix transaction issues by reviewing logs and transaction outcomes.
 
 ## Data Source Configuration
+
+Below is an example of the configuration used for enabling transaction receipts in the CryptoKitties subgraph:
 
 ```yaml
 specVersion: 1.0.0
@@ -55,12 +62,14 @@ dataSources:
 
 ## Schema Overview
 
-- Owner
-- CryptoKitty
-- Transaction
+- Owner: Represents a user or wallet that owns CryptoKitties.
+- CryptoKitty: Represents a specific NFT (non-fungible token)
+- Transaction: Represents a transaction where a CryptoKitty was transferred or sold.
+
+The Transaction entity includes an enum for TransactionType to classify the type of transaction (Mint, Sale, or Failed).
 
 ```gql
-# Enum representing different types of transactions (Mint, Sale, or Failed)
+# Enum representing different types of transactions
 enum TransactionType {
   Mint # A new CryptoKitty was created/Birthed
   Sale # The CryptoKitty was sold in a successful transaction
@@ -70,169 +79,115 @@ enum TransactionType {
 
 # Represents a user or wallet that owns CryptoKitties
 type Owner @entity {
-  "Unique address of the user or wallet"
-  id: ID!
-
-  "List of CryptoKitties owned by this user"
-  kitties: [CryptoKitty!]! @derivedFrom(field: "owner")
-
-  "Number of CryptoKitties owned by this Owner" # Ordering by a derived field's length is not supported, which is why a separate count field.
-  kittiesCount: BigInt!
-
-  "All transactions involving this user, derived from the Transaction.participant field."
-  transactions: [Transaction!]! @derivedFrom(field: "participant")
+  id: ID! # Unique address of the owner
+  kitties: [CryptoKitty!]! @derivedFrom(field: "owner") # List of owned CryptoKitties
+  kittiesCount: BigInt! # Number of CryptoKitties owned
+  transactions: [Transaction!]! @derivedFrom(field: "participant") # All transactions involving this owner
 }
 
-# Represents a specific CryptoKitty NFT and Transfer event
+# Represents a specific CryptoKitty NFT
 type CryptoKitty @entity {
-  "Unique identifier for each CryptoKitty (token ID)"
-  id: ID!
-
-  "The owner of this CryptoKitty"
-  owner: Owner!
-
-  "The unique token ID of the CryptoKitty NFT"
-  tokenId: BigInt!
-
-  "Number of times this CryptoKitty was involved in a transaction"
-  transactionCount: BigInt!
-
-  "Total amount this CryptoKitty has been sold for"
-  totalSold: BigInt!
-
-  txHash: Bytes!
+  id: ID! # Unique identifier for the CryptoKitty
+  owner: Owner! # Owner of the CryptoKitty
+  tokenId: BigInt! # Token ID of the CryptoKitty
+  transactionCount: BigInt! # Number of transactions involving this CryptoKitty
+  totalSold: BigInt! # Total amount the CryptoKitty was sold for
+  txHash: Bytes! # Transaction hash
 }
 
-# Represents a transaction where a CryptoKitty was transferred or sold
+# Represents a transaction involving a CryptoKitty
 type Transaction @entity {
-  "Unique identifier for each transaction (transaction hash)"
-  id: ID!
-
-  "Reference to the buyer or seller involved in this transaction"
-  participant: Owner!
-
-  "The CryptoKitty involved in this transaction"
-  kitty: CryptoKitty!
-
-  "Type of transaction (Mint, Sale, or Failed)"
-  transactionType: TransactionType!
-
-  "Amount sold (only applicable if transactionType is 'Sale')"
-  amountSold: BigInt!
-
-  txHash: Bytes!
+  id: ID! # Unique identifier (transaction hash)
+  participant: Owner! # The buyer or seller in the transaction
+  kitty: CryptoKitty! # The CryptoKitty involved in the transaction
+  transactionType: TransactionType! # Type of transaction (Mint, Sale, Failed)
+  amountSold: BigInt! # Sale amount (only if transactionType is 'Sale')
+  txHash: Bytes! # Transaction hash
 }
 ```
 
 ## Decoding Functions
 
-The subgraph includes functions to decode event logs from transaction receipts. These functions enable the retrieval of relevant data, such as the sale amount and transaction type
+The following functions help decode event logs from transaction receipts, allowing us to extract useful data like the sale amount and determine the type of transaction.
 
-### getAuctionSaleAmount(event: ethereum.Event)
+### Example: getAuctionSaleAmount
 
-Extracts the sale amount from an AuctionSuccessful event that occurs before the Transfer event in the logs. This function iterates through the logs, checks for the correct signature, and decodes the sale amount
+The function below demonstrates how to retrieve the sale amount from an AuctionSuccessful event, which occurs before a Transfer event in the logs.
 
 ```typescript
 export function getAuctionSaleAmount(event: ethereum.Event): BigInt | null {
-  // Check if the event has a transaction receipt. The receipt contains all logs from the transaction.
   if (!event.receipt) {
-    return null; // If there's no receipt, we can't proceed with log analysis.
+    return null; // No receipt, so we can't access logs
   }
 
-  const currentLogIndex = event.logIndex; // Log index of the current event being processed (Transfer event).
-  const logs = event.receipt!.logs; // Access all logs from the transaction receipt.
+  const currentLogIndex = event.logIndex;
+  const logs = event.receipt.logs; // Access all logs from the receipt
 
-  // Loop through logs to find any AuctionSuccessful events that occur before the Transfer event.
+  // Loop through logs to find the AuctionSuccessful event before the Transfer
   for (let i = 0; i < logs.length; i++) {
-    const currentLog = logs[i]; // Current log in the loop.
+    const currentLog = logs[i];
 
-    // Ensure that the log's index (from the logs array) is less than the current Transfer event's log index
-    // Convert i to BigInt for comparison with currentLogIndex
-    if (BigInt.fromI32(i) >= currentLogIndex) {
-      // Stop searching since we have passed the logs that occurred before the Transfer event.
-      break;
-    }
+    // Check if the log occurred before the current Transfer event
+    if (BigInt.fromI32(i) >= currentLogIndex) break;
 
-    // Check if the log corresponds to the AuctionSuccessful event by comparing its signature (topic0) and the contract address.
-    if (
-      currentLog.topics.length > 0 &&
-      currentLog.topics[0] == AUCTION_SUCCESS_SIG
-    ) {
-      // The `AuctionSuccessful` event data contains several fields. We are interested in the `totalPrice`,
-      // which is the second parameter (a `uint256`), located in the data section of the log.
-      // Extract and decode the `AuctionPrice` from the log's data.
-      // The `AuctionPrice` is located from bytes 32 to 64 in the log's data (the second parameter in the AuctionSuccessful event structure).
+    // Check for AuctionSuccessful event by comparing its signature (topic[0])
+    if (currentLog.topics[0] == AUCTION_SUCCESS_SIG) {
+      // Extract sale amount (second parameter in event data)
       const saleAmount = ethereum
         .decode(
           "uint256",
-          Bytes.fromUint8Array(currentLog.data.subarray(32, 64)) // Corresponds to the second parameter
+          Bytes.fromUint8Array(currentLog.data.subarray(32, 64))
         )!
         .toBigInt();
 
-      if (saleAmount) {
-        return saleAmount; // Return the sale amount if decoding succeeds
-      } else {
-        // If decoding fails, log a warning with the transaction hash.
-        log.warning(
-          "[getAuctionSaleAmount] Failed to decode sale amount in transaction {}",
-          [event.transaction.hash.toHexString()]
-        );
-        return null; // Return null if decoding fails
-      }
+      return saleAmount ? saleAmount : null;
     }
   }
 
-  // If no matching AuctionSuccessful event was found before the Transfer event, return null
   return null;
 }
 ```
 
-### determineTransactionType(event: ethereum.Event)
+### Example: determineTransactionType
 
-Determines the transaction type (Mint, Sale, or Failed) based on the event logs. It checks for the presence of relevant event signatures and returns the corresponding transaction type.
+This function determines the type of transaction based on the logs, identifying it as a Mint, Sale, or Failed transaction.
 
 ```typescript
 export function determineTransactionType(
   event: ethereum.Event
 ): TransactionType {
-  // Check if the event has a transaction receipt. The receipt contains all logs from the transaction.
-  if (!event.receipt) {
-    return TransactionType.Failed; // If there's no receipt, mark the transaction as failed.
-  }
+  if (!event.receipt) return TransactionType.Failed;
 
-  const logs = event.receipt!.logs; // Access all logs from the transaction receipt.
+  const logs = event.receipt.logs;
 
-  // Loop through all logs in the transaction receipt.
+  // Loop through all logs in the transaction receipt
   for (let i = 0; i < logs.length; i++) {
-    const log = logs[i]; // Current log in the loop.
+    const log = logs[i];
 
-    // Check if the log corresponds to the AuctionSuccessful event.
-    if (log.topics.length > 0 && log.topics[0] == AUCTION_SUCCESS_SIG) {
-      return TransactionType.Sale; // Return It's a sale transaction.
+    // If AuctionSuccessful event is found
+    if (log.topics[0] == AUCTION_SUCCESS_SIG) {
+      return TransactionType.Sale;
     }
 
-    // Check if the log matches the AuctionCancelled signature.
-    if (log.topics.length > 0 && log.topics[0] == AUCTION_CANCEL_SIG) {
-      return TransactionType.Failed; // Auction was cancelled, so mark as failed.
+    // If AuctionCancelled event is found
+    if (log.topics[0] == AUCTION_CANCEL_SIG) {
+      return TransactionType.Failed;
     }
   }
 
-  // Default to unknown if none of the conditions match.
   return TransactionType.Unknown;
 }
 ```
 
 ## Step-by-Step Guide for Decoding Event Logs
 
-### 1 - Understand Log Structure
+### 1. Understand the Log Structure
 
-Each event in the Ethereum blockchain is encoded into a log with the following key fields:
+- topics[0]: The event signature identifying the event emitted.
+- Other topics: Indexed parameters (e.g., addresses, token IDs).
+- data: ABI-encoded non-indexed parameters (e.g., sale amount).
 
-- topics: A list of indexed event parameters (including the event signature as the first topic)
-
-- data: Non-indexed parameters, encoded in the same way as function arguments.
-
-## How to Decode Event Logs
+## 2. Decode the Logs
 
 - topics[0]: This is the event signature, which identifies which event was emitted.
 
@@ -242,24 +197,19 @@ Each event in the Ethereum blockchain is encoded into a log with the following k
 
 ## Sample Queries
 
-## Query 1: Top Owner by Kitty Count and Active Sales
+## Query 1: Retrieve Top Owner by Kitty Count
 
-This query retrieves the owner with the most CryptoKitties and their related sales activity:
+This query fetches the owner with the most CryptoKitties and their active sales.
 
 ```gql
 {
   owners(first: 1, orderBy: kittiesCount, orderDirection: desc) {
     id
     kittiesCount
-    transactions(where: { transactionType: Sale, amountSold_gt: "0" }) {
+    transactions(where: { transactionType: Sale }) {
       id
     }
-    kitties(
-      where: { totalSold_gt: "0" }
-      first: 1
-      orderBy: transactionCount
-      orderDirection: desc
-    ) {
+    kitties(first: 1, orderBy: transactionCount, orderDirection: desc) {
       transactionCount
     }
   }
@@ -274,11 +224,11 @@ This query retrieves the owner with the most CryptoKitties and their related sal
     "owners": [
       {
         "id": "0xb1690c08e213a35ed9bab7b318de14420fb57d8c",
-        "kittiesCount": "20005",
+        "kittiesCount": "207927",
         "transactions": [],
         "kitties": [
           {
-            "transactionCount": "28"
+            "transactionCount": "118"
           }
         ]
       }
@@ -287,18 +237,72 @@ This query retrieves the owner with the most CryptoKitties and their related sal
 }
 ```
 
-## Retrieve Top CryptoKitty by Transaction Count with Sales
+## Query 2: Retrieve Failed Transactions for High-Activity CryptoKitties
 
-This query fetches the CryptoKitty with the highest transaction count that has been sold for a total amount greater than zero
+This query retrieves failed transactions for CryptoKitties that have been involved in a large number of transactions.
 
 ```gql
 {
-  cryptoKitties(
-    first: 1
-    orderBy: transactionCount
-    orderDirection: desc
-    where: { totalSold_gt: "0" }
+  transactions(
+    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
+    first: 2
   ) {
+    kitty {
+      id
+      tokenId
+      transactionCount
+      owner {
+        id
+      }
+    }
+    transactionType
+    txHash
+  }
+}
+```
+
+## Returns2
+
+```gql
+{
+  "data": {
+    "transactions": [
+      {
+        "kitty": {
+          "id": "0xa62",
+          "tokenId": "2658",
+          "transactionCount": "47",
+          "owner": {
+            "id": "0xb1690c08e213a35ed9bab7b318de14420fb57d8c"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x0065def336bff6abbd53dbb381d4adaed4a463e9687f04649b172c2c761b41f9"
+      },
+      {
+        "kitty": {
+          "id": "0x77578",
+          "tokenId": "488824",
+          "transactionCount": "50",
+          "owner": {
+            "id": "0x56ec15bd7268d71154809dfc5042381168139502"
+          }
+        },
+        "transactionType": "Failed",
+        "txHash": "0x00ac200037708a1cdb321724725833e304233b6cfe0b6efcf9a0399f6831cc22"
+      }
+    ]
+  }
+}
+```
+
+## Query 3: Retrieve Top 3 CryptoKitties by Sales Transactions
+
+This query fetches the top 2 CryptoKitties that have been involved in the most sales, along with their sale amount and owner details.
+
+```gql
+{
+  cryptoKitties(first: 2, orderBy: transactionCount, orderDirection: desc) {
     id
     tokenId
     transactionCount
@@ -311,100 +315,41 @@ This query fetches the CryptoKitty with the highest transaction count that has b
 }
 ```
 
-## Returns2
+## Return3
 
 ```gql
 {
   "data": {
     "cryptoKitties": [
       {
-        "id": "0xd4fb",
-        "tokenId": "54523",
-        "transactionCount": "37",
-        "totalSold": "16720789450827353920",
+        "id": "0xebc83",
+        "tokenId": "965763",
+        "transactionCount": "284",
+        "totalSold": "246000000000000000",
         "owner": {
-          "id": "0xa265881fe0ae9379a15d9d944fa3a39abcd8bbcb",
-          "kittiesCount": "13"
+          "id": "0x179d698f5a1c84c3ff4c5eb04e553c15a0c1d8d8",
+          "kittiesCount": "2"
         }
-      }
-    ]
-  }
-}
-```
-
-## Retrieve Failed Transactions for CryptoKitties with High Transaction Counts
-
-This query retrieves the first two transactions of type "Failed" for CryptoKitties that have a transaction count of 46 or more
-
-```gql
-{
-  transactions(
-    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
-  ) {
-    kitty {
-      id
-      tokenId
-      transactionCount
-      owner {
-        id
-      }
-    }
-    transactionType
-    txHash
-  }
-}
-```
-
-## Return3
-
-```gql
-{
-  transactions(
-    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
-  ) {
-    kitty {
-      id
-      tokenId
-      transactionCount
-      owner {
-        id
-      }
-    }
-    transactionType
-    txHash
-  }
-}
-```
-
-```gql
-{
-  "data": {
-    "transactions": [
-      {
-        "kitty": {
-          "id": "0x919",
-          "tokenId": "2329",
-          "transactionCount": "47",
-          "owner": {
-            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
-          }
-        },
-        "transactionType": "Failed",
-        "txHash": "0x281bbddf2c6654680a689e720eeb48926fc4dae22b9fd863ed2cda2df22b8644"
       },
       {
-        "kitty": {
-          "id": "0x919",
-          "tokenId": "2329",
-          "transactionCount": "47",
-          "owner": {
-            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
-          }
-        },
-        "transactionType": "Failed",
-        "txHash": "0x370dcdaff2440c033f13e26dd68ee05a7c2db4da276172383a73713dfbd529d6"
+        "id": "0xd15a6",
+        "tokenId": "857510",
+        "transactionCount": "279",
+        "totalSold": "14000000000000000",
+        "owner": {
+          "id": "0xd01c92937400dd1ece24992b1dc44aeaa47ae72a",
+          "kittiesCount": "37"
+        }
+      },
+      {
+        "id": "0xf3243",
+        "tokenId": "995907",
+        "transactionCount": "278",
+        "totalSold": "50873544697971783",
+        "owner": {
+          "id": "0xe738725cdcc41c91f734dd7b5b9659df994d6dda",
+          "kittiesCount": "2"
+        }
       }
     ]
   }
