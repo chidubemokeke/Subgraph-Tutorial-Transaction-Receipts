@@ -261,7 +261,27 @@ This query retrieves failed transactions for CryptoKitties that have been involv
 }
 ```
 
-## Returns2
+## Return3
+
+```gql
+{
+  transactions(
+    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
+    first: 2
+  ) {
+    kitty {
+      id
+      tokenId
+      transactionCount
+      owner {
+        id
+      }
+    }
+    transactionType
+    txHash
+  }
+}
+```
 
 ```gql
 {
