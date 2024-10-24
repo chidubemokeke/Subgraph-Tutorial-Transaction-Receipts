@@ -360,26 +360,6 @@ This query retrieves the first two transactions of type "Failed" for CryptoKitti
 
 ```gql
 {
-  transactions(
-    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
-  ) {
-    kitty {
-      id
-      tokenId
-      transactionCount
-      owner {
-        id
-      }
-    }
-    transactionType
-    txHash
-  }
-}
-```
-
-```gql
-{
   "data": {
     "transactions": [
       {
