@@ -2,7 +2,7 @@
 
 This repository is a simple guide to understanding and utilizing transaction receipts within subgraphs. We'll explore how transaction receipts can enhance how we interact with blockchain data, particularly within NFT smart contracts, using the CryptoKitties contract as an example.
 
-By setting receipt: true in the manifest, we can access transaction logs to retrieve important data such as the sale amount from different event parameters and logIndex in the same transaction. Transaction receipts are also used to determine the type of transaction and assign an appropriate Enum value to it.
+By setting `receipt: true` in the manifest, we can access transaction logs to retrieve important data such as the sale amount from different event parameters and logIndex in the same transaction. Transaction receipts are also used to determine the type of transaction and assign an appropriate enum value to it.
 
 ## What Are Transaction Receipts?
 
@@ -14,6 +14,16 @@ A transaction receipt is a confirmation record created after a transaction is mi
 - Other important data relevant to the transaction.
 
 These receipts are vital for developers because they allow deep insights into what occurred during the transaction, beyond just a confirmation of its success.
+
+## Transaction Receipts
+
+Transaction Receipts provide access to logs emitted by other contracts. These logs contain valuable information regarding events triggered during execution by other contracts.
+
+For example, our subgraph tracks events from the CryptoKitty contract. However, to gather sale data from the exchanges, we need to identify the events/logs emitted by the exchange contracts.
+
+The `key` is that we can listen for Transfer events on the CryptoCoven contract. By doing this, we can also check if sale-related events occurred within the same transaction. This allows us to aggregate data across multiple contracts effectively and obtain comprehensive insights into NFT transactions.
+
+Understanding these transactions is crucial for developers and users alike, as it enables them to track and analyze the complete lifecycle of NFTs. By leveraging transaction receipts, developers can build more robust applications that provide users with detailed transaction histories, enhancing transparency and trust in the ecosystem.
 
 ## Why Use Transaction Receipts?
 
@@ -138,6 +148,8 @@ export function getAuctionSaleAmount(event: ethereum.Event): BigInt | null {
       currentLog.topics.length > 0 &&
       currentLog.topics[0] == AUCTION_SUCCESS_SIG
     ) {
+      // - We use `subarray(32, 64)` to slice out the second 32 bytes of data from the event log.
+      // - Since Ethereum stores numeric values in a "uint256" format, we specify "uint256" in the decode function.
       // Decode the sale amount, which is the second parameter in the log data
       const saleAmount = ethereum
         .decode(
