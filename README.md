@@ -231,7 +231,7 @@ export function determineTransactionType(
 
 ## Query 1: Retrieve Top Owner by Kitty Count
 
-This query fetches the owner with the most CryptoKitties and their active sales.
+In this query, Transaction Receipts help identify owners with the most active sales across various transaction types (e.g., successful sales, failed transfers). The transactions field includes sale-type transactions decoded from Transaction Receipts, enabling detailed tracking of sales associated with each owner.
 
 ```gql
 {
@@ -271,13 +271,13 @@ This query fetches the owner with the most CryptoKitties and their active sales.
 
 ## Query 2: Retrieve Failed Transactions for High-Activity CryptoKitties
 
-This query retrieves failed transactions for CryptoKitties that have been involved in a large number of transactions.
+This query uses Transaction Receipts to capture transactions marked as "Failed," which are decoded and tagged in logs from both the NFT contract and marketplace contracts. By using these receipts, we can include both transaction statuses and transaction counts in the query, allowing users to quickly identify CryptoKitties that frequently experience failed transactions.
 
 ```gql
 {
   transactions(
     where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
+    first: 1
   ) {
     kitty {
       id
@@ -301,53 +301,42 @@ This query retrieves failed transactions for CryptoKitties that have been involv
     "transactions": [
       {
         "kitty": {
-          "id": "0xa62",
-          "tokenId": "2658",
-          "transactionCount": "47",
+          "id": "0x1896fa",
+          "tokenId": "1611514",
+          "transactionCount": "49",
           "owner": {
             "id": "0xb1690c08e213a35ed9bab7b318de14420fb57d8c"
           }
         },
         "transactionType": "Failed",
-        "txHash": "0x0065def336bff6abbd53dbb381d4adaed4a463e9687f04649b172c2c761b41f9"
-      },
-      {
-        "kitty": {
-          "id": "0x77578",
-          "tokenId": "488824",
-          "transactionCount": "50",
-          "owner": {
-            "id": "0x56ec15bd7268d71154809dfc5042381168139502"
-          }
-        },
-        "transactionType": "Failed",
-        "txHash": "0x00ac200037708a1cdb321724725833e304233b6cfe0b6efcf9a0399f6831cc22"
+        "txHash": "0x0033917ad2eeaa7183262d47bd4bab071857e21b53a7bd744afebc0002d95cf0"
       }
     ]
   }
 }
 ```
 
-## Retrieve Failed Transactions for CryptoKitties with High Transaction Counts
+## Query 3: Retrieving CryptoKittiy with Maximum Transactions and Sales
+
+Here, Transaction Receipts enable the tracking of total sale amounts (totalSold) and transaction counts (transactionCount) across marketplaces, using receipts to decode sale-related logs. This provides a straightforward way to query the most traded or valuable CryptoKitties based on cumulative transaction data.
 
 This query retrieves the first two transactions of type "Failed" for CryptoKitties that have a transaction count of 46 or more
 
 ```gql
 {
-  transactions(
-    where: { transactionType: Failed, kitty_: { transactionCount_gte: "46" } }
-    first: 2
+  cryptoKitties(
+    where: { transactionCount_gte: "50" }
+    orderBy: transactionCount
+    orderDirection: desc
+    first: 1
   ) {
-    kitty {
+    id
+    tokenId
+    transactionCount
+    totalSold
+    owner {
       id
-      tokenId
-      transactionCount
-      owner {
-        id
-      }
     }
-    transactionType
-    txHash
   }
 }
 ```
@@ -357,30 +346,15 @@ This query retrieves the first two transactions of type "Failed" for CryptoKitti
 ```gql
 {
   "data": {
-    "transactions": [
+    "cryptoKitties": [
       {
-        "kitty": {
-          "id": "0x919",
-          "tokenId": "2329",
-          "transactionCount": "47",
-          "owner": {
-            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
-          }
-        },
-        "transactionType": "Failed",
-        "txHash": "0x281bbddf2c6654680a689e720eeb48926fc4dae22b9fd863ed2cda2df22b8644"
-      },
-      {
-        "kitty": {
-          "id": "0x919",
-          "tokenId": "2329",
-          "transactionCount": "47",
-          "owner": {
-            "id": "0xc7af99fe5513eb6710e6d5f44f9989da40f27f26"
-          }
-        },
-        "transactionType": "Failed",
-        "txHash": "0x370dcdaff2440c033f13e26dd68ee05a7c2db4da276172383a73713dfbd529d6"
+        "id": "0xfd679",
+        "tokenId": "1037945",
+        "transactionCount": "1746",
+        "totalSold": "40731620370370370",
+        "owner": {
+          "id": "0x6e13c7e25c2cda6f5c8c4e431bee480bfb312c28"
+        }
       }
     ]
   }
