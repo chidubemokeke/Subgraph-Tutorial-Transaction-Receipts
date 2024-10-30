@@ -1,6 +1,7 @@
 # Graph CLI generated artifacts
 build/
 generated/
+tests/
 
 # Dependency directories
 node_modules/
@@ -32,6 +33,38 @@ typechain-types
 
 # Hardhat files
 cache
+# Graph CLI generated artifacts
+build/
+generated/
+tests/
 
-# Unnecessary Mac Files
-.DS_STORE
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+
+# Testing
+coverage
+coverage.json
+
+# Typechain
+typechain
+typechain-types
+
+# Hardhat files
+cache
