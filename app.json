@@ -1,0 +1,303 @@
+[
+  {
+    "inputs": [],
+    "name": "_postID",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_userID",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_comment", "type": "string" },
+      { "internalType": "uint256", "name": "_postID", "type": "uint256" }
+    ],
+    "name": "addComment",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "admin",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_type", "type": "string" },
+      { "internalType": "string", "name": "_description", "type": "string" },
+      { "internalType": "string", "name": "_postURL", "type": "string" }
+    ],
+    "name": "createPost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "string", "name": "_name", "type": "string" }],
+    "name": "createProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "id", "type": "uint256" }],
+    "name": "deletePost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_postID", "type": "uint256" },
+      { "internalType": "string", "name": "_description", "type": "string" }
+    ],
+    "name": "editPost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_address", "type": "address" }
+    ],
+    "name": "follow",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAddresses",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllAppUser",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          {
+            "internalType": "uint256",
+            "name": "timeCreated",
+            "type": "uint256"
+          },
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "uint256", "name": "postCount", "type": "uint256" },
+          {
+            "internalType": "uint256",
+            "name": "followerCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "followingCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SocialNetwork.AllUserStruck[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllPosts",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "author", "type": "address" },
+          { "internalType": "string", "name": "postType", "type": "string" },
+          {
+            "internalType": "string",
+            "name": "postDescription",
+            "type": "string"
+          },
+          { "internalType": "string", "name": "postURL", "type": "string" },
+          {
+            "internalType": "uint256",
+            "name": "timeCreated",
+            "type": "uint256"
+          },
+          { "internalType": "uint256", "name": "postID", "type": "uint256" },
+          { "internalType": "uint256", "name": "likes", "type": "uint256" },
+          { "internalType": "string[]", "name": "comments", "type": "string[]" }
+        ],
+        "internalType": "struct SocialNetwork.Post[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_address", "type": "address" }
+    ],
+    "name": "getFollowers",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_address", "type": "address" }
+    ],
+    "name": "getFollowing",
+    "outputs": [
+      { "internalType": "address[]", "name": "", "type": "address[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_address", "type": "address" }
+    ],
+    "name": "getPosts",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "author", "type": "address" },
+          { "internalType": "string", "name": "postType", "type": "string" },
+          {
+            "internalType": "string",
+            "name": "postDescription",
+            "type": "string"
+          },
+          { "internalType": "string", "name": "postURL", "type": "string" },
+          {
+            "internalType": "uint256",
+            "name": "timeCreated",
+            "type": "uint256"
+          },
+          { "internalType": "uint256", "name": "postID", "type": "uint256" },
+          { "internalType": "uint256", "name": "likes", "type": "uint256" },
+          { "internalType": "string[]", "name": "comments", "type": "string[]" }
+        ],
+        "internalType": "struct SocialNetwork.Post[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_postID", "type": "uint256" }
+    ],
+    "name": "getSinglePost",
+    "outputs": [
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "uint256", "name": "", "type": "uint256" },
+      { "internalType": "string[]", "name": "", "type": "string[]" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getUserCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_postID", "type": "uint256" }
+    ],
+    "name": "likePost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "profiles",
+    "outputs": [
+      { "internalType": "address", "name": "owner", "type": "address" },
+      { "internalType": "string", "name": "name", "type": "string" },
+      { "internalType": "uint256", "name": "timeCreated", "type": "uint256" },
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "uint256", "name": "postCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "followerCount", "type": "uint256" },
+      { "internalType": "uint256", "name": "followingCount", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "friend_key", "type": "address" }
+    ],
+    "name": "readMessage",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "sender", "type": "address" },
+          { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+          { "internalType": "string", "name": "msg", "type": "string" }
+        ],
+        "internalType": "struct SocialNetwork.message[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "friend_key", "type": "address" },
+      { "internalType": "string", "name": "_msg", "type": "string" }
+    ],
+    "name": "sendMessage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_address", "type": "address" }
+    ],
+    "name": "unfollow",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_postID", "type": "uint256" }
+    ],
+    "name": "unlikePost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

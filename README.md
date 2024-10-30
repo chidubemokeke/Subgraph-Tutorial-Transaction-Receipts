@@ -320,7 +320,7 @@ This query uses Transaction Receipts to capture transactions marked as "Failed,"
 
 Here, Transaction Receipts enable the tracking of total sale amounts (totalSold) and transaction counts (transactionCount) across marketplaces, using receipts to decode sale-related logs. This provides a straightforward way to query the most traded or valuable CryptoKitties based on cumulative transaction data.
 
-This query retrieves the first two transactions of type "Failed" for CryptoKitties that have a transaction count of 46 or more
+This query retrieves the first transaction of type "Failed" for CryptoKitties that have a transaction count of 46 or more
 
 ```gql
 {
